@@ -24,7 +24,9 @@ Only works with GET and POST requests and has three helper files (St- stands for
 This is overall not a good architecture. 
 The basic idea is that you always need to specify the handler name (hdl) and sometimes action name (act) which are then interpreted as in where to go for your desired query.
 For example, requestrouter.php?hdl=event would give you all the events without specifyin any parameters, 
-whereas hdl=admin and act=apr (for approval) also requires additional parameters event=<event id> and user=<user id>. 
+whereas hdl=admin and act=apr (for approval) also requires additional parameters event={event id} and user={user id}. 
+
+This solution only relies on existing database procedures and uses preapared statements along with tag stripping instead of raw SQL.
 
 ### Plans for 4th iteration: REST(ish) API
 
