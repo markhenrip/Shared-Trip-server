@@ -5,7 +5,7 @@ class TestObject {
 	var $params;
 
 	public function __construct($someParams) {
-		include 'utils/utils.php';
+		include 'utils/parsing.php';
 		$this->params = $someParams;
 	}
 

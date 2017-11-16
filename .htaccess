@@ -1,4 +1,5 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule api/v1/(.+)?(.*)$ v1/router.php?request=$1&%2 [NC,L,QSA]
     RewriteRule api/v1/(.+)$ v1/router.php?request=$1 [NC,L]
 </IfModule>

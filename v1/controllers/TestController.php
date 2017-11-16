@@ -8,8 +8,37 @@
 
 class TestController extends ApiControllerBase
 {
-    public function __construct($requestUri)
+    public function __construct($allArgs)
     {
-        parent::__construct($requestUri);
+        parent::__construct($allArgs);
+    }
+
+    public function canIReachGlobals() {
+        return $_REQUEST;
+    }
+
+    protected function _create()
+    {
+        // TODO: Implement _create() method.
+    }
+
+    protected function _read()
+    {
+        switch ($this->verb) {
+            case 'first':
+                return $this->_fetch('CALL sp_get_event(?)', 'i', array(1));
+            default:
+                return $this->_fetch('CALL sp_get_all_events()');
+        }
+    }
+
+    protected function _update()
+    {
+        // TODO: Implement _update() method.
+    }
+
+    protected function _delete()
+    {
+        // TODO: Implement _delete() method.
     }
 }
