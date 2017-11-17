@@ -19,6 +19,7 @@ abstract class ApiControllerBase
     public function __construct($allArgs)
     {
         include '../utils/statement.php';
+        include '../utils/errors.php';
 
         $this->httpMethod = $allArgs['method'];
         $this->entityName = $allArgs['controller'];
