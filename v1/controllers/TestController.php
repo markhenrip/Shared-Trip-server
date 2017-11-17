@@ -26,9 +26,9 @@ class TestController extends ApiControllerBase
     {
         switch ($this->verb) {
             case 'first':
-                return $this->_fetch('CALL sp_get_event(?)', 'i', array(1));
+                return $this->_easyFetch('CALL sp_get_event(?)', 'i', array(1));
             default:
-                return $this->_fetch('CALL sp_get_all_events()');
+                return $this->_easyFetch('CALL sp_get_all_events()');
         }
     }
 

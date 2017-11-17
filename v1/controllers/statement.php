@@ -7,9 +7,10 @@
  * Original author: Guido in PHP manual comments
  * Original source: http://php.net/manual/en/mysqli-stmt.bind-param.php#110363
  */
-class Db extends mysqli {
+class db extends mysqli {
+
     public function prepare($query) {
-        return new stmt($this,$query);
+        return new Stmt($this,$query);
     }
 }
 

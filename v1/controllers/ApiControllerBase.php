@@ -18,8 +18,8 @@ abstract class ApiControllerBase
 
     public function __construct($allArgs)
     {
-        include '../utils/statement.php';
-        include '../utils/errors.php';
+        include 'errors.php';
+        include 'statement.php';
 
         $this->httpMethod = $allArgs['method'];
         $this->entityName = $allArgs['controller'];
@@ -31,7 +31,7 @@ abstract class ApiControllerBase
 
         $this->args = $allArgs;
 
-        $this->connection = new db("localhost","root","mysqlparool123","sharedtrip");
+        $this->connection = new db("localhost", "root", "mysqlparool123", "sharedtrip");
 
         if (mysqli_connect_errno()) {
             ERR_MYSQLI_CONNECTION(mysqli_connect_error());
@@ -68,7 +68,7 @@ abstract class ApiControllerBase
      * @return array|null - query results (named)
      * @throws Exception - statement could not execute
      */
-    protected function _fetch($query, $types = '', $params = null) {
+    protected function _easyFetch($query, $types = '', $params = null) {
 
         $stmt = $this->connection->prepare($query);
 
@@ -76,16 +76,10 @@ abstract class ApiControllerBase
             $stmt->mbind_param($types[$i], $params[$i]);
         }
 
-        if (isset($this->file)) {
+        return $this->_fetch($stmt);
+    }
 
-            // include a file ($null binding param must have already been provided)
-            $fp = fopen($this->file["tmp_name"], "r");
-            while (!feof($fp)) {
-                $stmt->send_long_data($i == 0 ? $i : $i-1, fread($fp, 8192));
-            }
-            fclose($fp);
-        }
-
+    protected function _fetch(mysqli_stmt $stmt) {
         if (!$stmt->execute()){
             $this->connection->close();
             ERR_STMT_EXEC($stmt->error);

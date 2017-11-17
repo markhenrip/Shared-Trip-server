@@ -7,11 +7,14 @@
  */
 include  'controllers/ApiControllerBase.php';
 include 'controllers/TestController.php';
+include 'controllers/EventController.php';
 include 'utils/parsing.php';
+include 'utils/errors.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: *");
 header("Content-Type: application/json");
+
 
 $requestPath = $_REQUEST['request'];
 $method = $_SERVER['REQUEST_METHOD'];
@@ -47,8 +50,12 @@ try {
     $controllerName = $allArgs['controller'];
 
     switch ($controllerName) {
-        case 'test':
+        /*case 'test':
             $controller = new TestController($allArgs);
+            $response = $controller->process();
+            break;*/
+        case 'event':
+            $controller = new EventController($allArgs);
             $response = $controller->process();
             break;
         default:
