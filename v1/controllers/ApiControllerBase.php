@@ -34,7 +34,7 @@ abstract class ApiControllerBase
         $this->connection = new db("localhost","root","mysqlparool123","sharedtrip");
 
         if (mysqli_connect_errno()) {
-            throw new Exception('Failed to establish a DB connection: '.mysqli_connect_error());
+            ERR_MYSQLI_CONNECTION(mysqli_connect_error());
         }
     }
 
@@ -81,14 +81,14 @@ abstract class ApiControllerBase
             // include a file ($null binding param must have already been provided)
             $fp = fopen($this->file["tmp_name"], "r");
             while (!feof($fp)) {
-                $stmt->send_long_data($i-1, fread($fp, 8192));
+                $stmt->send_long_data($i == 0 ? $i : $i-1, fread($fp, 8192));
             }
             fclose($fp);
         }
 
         if (!$stmt->execute()){
             $this->connection->close();
-            throw new Exception($stmt->error);
+            ERR_STMT_EXEC($stmt->error);
         }
 
         $result = $stmt->get_result();

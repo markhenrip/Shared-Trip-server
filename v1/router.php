@@ -8,9 +8,8 @@
 include  'controllers/ApiControllerBase.php';
 include 'controllers/TestController.php';
 include 'utils/parsing.php';
-include  'utils/statement.php';
 
-header("Access-Control-Allow-Orgin: *");
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: *");
 header("Content-Type: application/json");
 
@@ -31,8 +30,7 @@ try {
             $basicParams = $_REQUEST;
             break;
         default:
-            echo json_encode(array('error' => 'Undefined HTTP method: ' . $method));
-            exit();
+            ERR_HTTP_METHOD($method);
     }
 
     $basicParams['method'] = $method;
@@ -46,15 +44,17 @@ try {
     unset($allArgs['request']);
 
     $response = null;
+    $controllerName = $allArgs['controller'];
 
-    switch ($allArgs['controller']) {
+    switch ($controllerName) {
         case 'test':
             $controller = new TestController($allArgs);
             $response = $controller->process();
             break;
         default:
-            throw new Exception('Undefined controller: ' . $allArgs['controller']);
+            ERR_CONTROLLER_NAME($controllerName);
     }
+
 } catch (Exception $e) {
     $response = array('error' => $e->getMessage());
 }
