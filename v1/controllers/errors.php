@@ -19,4 +19,4 @@ function ERR_MISSING_FUNCTION_DELETE($endpoint) { throw new Exception('\'Delete\
 /* MySQL */
 function ERR_MYSQLI_CONNECTION($conErr) { throw new Exception('Failed to establish a DB connection: '.$conErr); }
 function ERR_STMT_EXEC($stmtErr) { throw new Exception('Could not execute SQL statement: '.$stmtErr); }
-function MISSING_PARAMS_ERR() { throw new Exception('Missing one or more query parameters'); }
+function ERR_MISSING_PARAMS() { throw new Exception('Missing one or more query parameters'); }

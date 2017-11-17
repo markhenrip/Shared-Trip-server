@@ -23,7 +23,7 @@ class EventController extends ApiControllerBase
             $this->args['total_cost'], $this->args['spots'],
             $this->args['start_date'], $this->args['end_date'],
             $this->args['private'])
-        ) MISSING_PARAMS_ERR();
+        ) ERR_MISSING_PARAMS();
 
         if ($this->args['start_date'] == "null") $this->args['start_date'] = null;
         if ($this->args['end_date']   == "null") $this->args['end_date']   = null;
@@ -75,7 +75,17 @@ class EventController extends ApiControllerBase
 
     protected function _read()
     {
-        ERR_MISSING_FUNCTION_READ($this->entityName);
+        if (!isset($this->entityId)){
+            ERR_MISSING_PARAMS();
+        }
+
+        return $this->_easyFetch(
+            'CALL sharedtrip.sp_get_event(?)',
+            'i',
+            $this->entityId,
+            true,
+            10
+        )[0]; // makes sense to return an element, not an array of one element
     }
 
     protected function _update()
