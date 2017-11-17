@@ -64,10 +64,11 @@ abstract class ApiControllerBase
     /** Creates a prepared statement, binds parameters dynamically, executes the statement and returns the result.
      * WARNING: Can't handle files and images!
      * @param $query - parametrized sql query string
-     * @param $types - string of types for binding
+     * @param string $types - string of types for binding
      * @param $params - regular array of values for binding
+     * @param bool $withImage - whether the results contain an image
+     * @param int $imageIndex - if they do, then at which position
      * @return array|null - query results (named)
-     * @throws Exception - statement could not execute
      */
     protected function _easyFetch($query, $types = '', $params = null, $withImage = false, $imageIndex = 0) {
 

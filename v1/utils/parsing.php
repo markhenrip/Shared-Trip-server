@@ -83,9 +83,9 @@ function joinPathArgs($args) {
 
     $argsObject = array();
 
-    // odd number of path args means there is a finisher
+    // odd number of path args means there is a finishing verb
     if (count($args) % 2 == 1) {
-        $argsObject['finisher'] = array_pop($args);
+        $argsObject['verb'] = array_pop($args);
     }
 
     // even number of path args: key-value pairs
