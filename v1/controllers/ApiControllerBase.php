@@ -44,10 +44,10 @@ abstract class ApiControllerBase
 
     public function process() {
         switch ($this->httpMethod) {
-            case 'GET':
-                return $this->_read();
             case 'POST':
                 return $this->_create();
+            case 'GET':
+                return $this->_read();
             case 'PUT':
                 return $this->_update();
             default:
@@ -80,7 +80,7 @@ abstract class ApiControllerBase
                 $stmt->mbind_param($types[$i], $params[$i]);
             }
 
-        } else {
+        } else if (isset($params)) {
             $stmt->mbind_param($types, $params);
         }
 
@@ -128,5 +128,24 @@ abstract class ApiControllerBase
         $this->connection->close();
 
         return $output;
+    }
+
+    protected function _noResult($query, $types = '', $params = null) {
+        $stmt = $this->connection->prepare($query);
+
+        if (is_array($params)) {
+
+            for ($i = 0; $i < strlen($types); $i++) {
+                $stmt->mbind_param($types[$i], $params[$i]);
+            }
+
+        } else if (isset($params)) {
+            $stmt->mbind_param($types, $params);
+        }
+
+        if (!$stmt->execute()){
+            $this->connection->close();
+            ERR_STMT_EXEC($stmt->error);
+        }
     }
 }

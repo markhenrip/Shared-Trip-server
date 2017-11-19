@@ -90,11 +90,115 @@ class EventController extends ApiControllerBase
 
     protected function _update()
     {
-        ERR_MISSING_FUNCTION_UPDATE($this->entityName);
+        if ($this->verb == 'upload'){
+            return $this->_updateFile();
+        }
+
+        $updated = false;
+        if (isset($this->args['name'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['name']);
+            $this->_noResult('CALL events.sp_update_event_name(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['location'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['location']);
+            $this->_noResult('CALL events.sp_update_event_location(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['admin'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['admin']);
+            $this->_noResult('CALL events.sp_update_event_admin(?,?)','ii',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['total_cost'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['total_cost']);
+            $this->_noResult('CALL events.sp_update_event_cost(?,?)','ii',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['spots'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['spots']);
+            $this->_noResult('CALL events.sp_update_event_spots(?,?)','ii',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['description'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['description']);
+            $this->_noResult('CALL events.sp_update_event_description(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['start_date'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['start_date']);
+            $this->_noResult('CALL events.sp_update_event_start_date(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['end_date'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['end_date']);
+            $this->_noResult('CALL events.sp_update_event_end_date(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['private'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['private']);
+            $this->_noResult('CALL events.sp_update_event_privacy(?,?)','ii',$stmtArgs);
+            $updated = true;
+        }
+
+        if (!$updated){
+            ERR_MISSING_PARAMS();
+        }
     }
 
     protected function _delete()
     {
-        ERR_MISSING_FUNCTION_DELETE($this->entityName);
+        if (!isset($this->entityId)){
+            ERR_MISSING_PARAMS();
+        }
+
+        $this->_noResult('CALL events.sp_delete_event(?)','i',$this->entityId);
+    }
+
+    private function _updateFile() {
+        $null = null;
+        $stmt = $this->connection->prepare('CALL events.sp_update_event_picture(?,?)');
+        $id = $this->entityId;
+        $stmt->bind_param('ib', $id, $null);
+        $putData = fopen("php://input", "rb");
+
+        while ($data = fread($putData, 8192)) {
+            $stmt->send_long_data(1, $data);
+        }
+        fclose($putData);
+
+        if (!$stmt->execute()){
+            $this->connection->close();
+            ERR_STMT_EXEC($stmt->error);
+        }
+
+        $stmt->close();
+        $this->connection->close();
     }
 }
