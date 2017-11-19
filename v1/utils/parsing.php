@@ -5,6 +5,7 @@ function doSomething() {
 }
 
 function PUTparams() {
+    
     parse_str(file_get_contents("php://input"), $put_body);
 
     $body_master_key = array_shift(array_keys($put_body));

@@ -6,8 +6,9 @@
  * Time: 20:42
  */
 include  'controllers/ApiControllerBase.php';
-include 'controllers/TestController.php';
+//include 'controllers/TestController.php';
 include 'controllers/EventController.php';
+include 'controllers/UserController.php';
 include 'utils/parsing.php';
 include 'utils/errors.php';
 
@@ -18,7 +19,10 @@ header("Content-Type: application/json");
 
 $requestPath = $_REQUEST['request'];
 $method = $_SERVER['REQUEST_METHOD'];
-$basicParams = null;
+$basicParams = array();
+
+/* PUT might contain a file. And then it's *just* the file */
+$putFile = preg_match('~/upload~', $requestPath);
 
 try {
     switch ($method) {
@@ -26,7 +30,7 @@ try {
             $basicParams = $_GET;
             break;
         case 'PUT':
-            $basicParams = PUTparams();
+            if (!$putFile) $basicParams = PUTparams();
             break;
         case 'POST':
         case 'DELETE':
@@ -38,12 +42,15 @@ try {
 
     $basicParams['method'] = $method;
 
+    /* for POST requests only */
     if (isset($_FILES['file'])) {
+
         $basicParams['file'] = $_FILES['file'];
     }
-
     $pathArgs = parsePathForArgs($requestPath);
+
     $allArgs = array_merge($basicParams, $pathArgs);
+
     unset($allArgs['request']);
 
     $response = null;
@@ -56,17 +63,22 @@ try {
             break;*/
         case 'event':
             $controller = new EventController($allArgs);
-            $response = $controller->process();
+            break;
+        case 'user':
+            $controller = new UserController($allArgs);
             break;
         default:
             ERR_CONTROLLER_NAME($controllerName);
     }
 
+    $response = $controller->process();
+
 } catch (Exception $e) {
     $response = array('error' => $e->getMessage());
 }
 
-echo json_encode($response);
+if (isset($response))
+    echo json_encode($response);
 
 
 ?>
