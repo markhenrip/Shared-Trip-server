@@ -49,6 +49,16 @@ class UserController extends ApiControllerBase
                     true,
                     10);
 
+            case 'status':
+                if (!isset($this->entityId, $this->args['event']))
+                    ERR_MISSING_PARAMS();
+
+                return $this->_easyFetch(
+                    'CALL sp_get_approval_status(?,?)',
+                    'ii',
+                    array($this->args['event'], $this->entityId)
+                )[0];
+
             case 'joined':
                 if (!isset($this->entityId))
                     ERR_MISSING_PARAMS();
@@ -107,6 +117,18 @@ class UserController extends ApiControllerBase
 
     protected function _delete()
     {
-        ERR_MISSING_FUNCTION_DELETE($this->entityName);
+        if (!isset($this->entityId, $this->args['event']))
+            ERR_MISSING_PARAMS();
+
+        $result = $this->_easyFetch(
+            'CALL sp_leave_event(?,?)',
+            'ii',
+            array($this->args['event'], $this->entityId)
+        )[0];
+
+        if (isset($result['error_reason'])){
+            throw new Exception($result['error_reason']);
+        }
+        return $result;
     }
 }
