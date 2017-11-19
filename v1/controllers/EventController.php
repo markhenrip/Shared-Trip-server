@@ -18,6 +18,10 @@ class EventController extends ApiControllerBase
 
     protected function _create()
     {
+        if ($this->verb=='join') {
+            return $this->_joinEvent();
+        }
+
         if (!isset($this->args['user'], $this->args['location'],
             $this->args['name'], $this->args['description'],
             $this->args['total_cost'], $this->args['spots'],
@@ -75,6 +79,10 @@ class EventController extends ApiControllerBase
 
     protected function _read()
     {
+        if ($this->verb=='search') {
+            return $this->_search();
+        }
+
         if (!isset($this->entityId)){
             ERR_MISSING_PARAMS();
         }
@@ -200,5 +208,50 @@ class EventController extends ApiControllerBase
 
         $stmt->close();
         $this->connection->close();
+    }
+
+    private function _joinEvent()
+    {
+        if (!isset($this->args['user']))
+            ERR_MISSING_PARAMS();
+
+        $this->_noResult(
+            'CALL sp_join_event(?,?)',
+            'ii',
+            array($this->entityId, $this->args['user']));
+    }
+
+    private function _search() {
+        $criteria = false;
+
+        $combinedResult = array();
+
+        if (isset($this->args['name'])) {
+            $result = $this->_easyFetch(
+                'CALL sp_search_event_by_name(?)',
+                's',
+                $this->args['name']);
+
+            $combinedResult = $result;
+            $criteria = true;
+        }
+
+        if (isset($this->args['location'])) {
+            $result = $this->_easyFetch(
+                'CALL search.sp_search_events_by_location(?)',
+                's',
+                $this->args['location']);
+
+            $combinedResult = $combinedResult
+                ? $result
+                : array_intersect($result, $combinedResult);
+            $criteria = true;
+        }
+
+        if (!$criteria){
+            ERR_MISSING_PARAMS();
+        }
+
+        return array_values($combinedResult);
     }
 }

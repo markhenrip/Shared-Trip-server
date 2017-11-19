@@ -126,7 +126,6 @@ abstract class ApiControllerBase
         }
 
         $stmt->close();
-        $this->connection->close();
 
         return $output;
     }
