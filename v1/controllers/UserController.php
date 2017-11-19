@@ -11,7 +11,18 @@ class UserController extends ApiControllerBase
 
     protected function _create()
     {
-        // TODO: Implement _create() method.
+        if (!isset($this->args['fb_id'], $this->args['name'], $this->args['gender']))
+            ERR_MISSING_PARAMS();
+
+        $id = $this->args['fb_id'];
+        $name = $this->args['name'];
+        $sex = $this->args['gender'];
+        $picUri = $this->args['picture'];
+
+        return $this->_easyFetch(
+            'CALL users.sp_create_fb_user(?,?,?,?)',
+            'ssss',
+            array($id, $name, $sex, $picUri));
     }
 
     protected function _read()
@@ -48,12 +59,22 @@ class UserController extends ApiControllerBase
             ERR_MISSING_PARAMS();
         }
 
+        // NB! can't update name, gender, FB/Google id and picture because they all come from FB/Google
+
         $updated = false;
-        if (isset($this->args['text'])) {
+        if (isset($this->args['description'])) {
             $stmtArgs = array(
                 $this->entityId,
-                $this->args['text']);
+                $this->args['description']);
             $this->_noResult('CALL users.sp_update_user_description(?,?)','is',$stmtArgs);
+            $updated = true;
+        }
+
+        if (isset($this->args['birthday'])) {
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args['birthday']);
+            $this->_noResult('CALL users.sp_update_user_birthday(?,?)','is', $stmtArgs);
             $updated = true;
         }
 
@@ -64,6 +85,6 @@ class UserController extends ApiControllerBase
 
     protected function _delete()
     {
-        // TODO: Implement _delete() method.
+        ERR_MISSING_FUNCTION_DELETE($this->entityName);
     }
 }
