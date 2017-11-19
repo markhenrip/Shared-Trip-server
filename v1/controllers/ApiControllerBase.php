@@ -99,6 +99,7 @@ abstract class ApiControllerBase
             ERR_STMT_EXEC($stmt->error);
         }
 
+
         $result = $stmt->get_result();
         if ($result==null) return null;
 

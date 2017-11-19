@@ -38,6 +38,28 @@ class UserController extends ApiControllerBase
                     's',
                     $this->args['userId'])[0];
 
+            case 'browse':
+                if (!isset($this->entityId))
+                    ERR_MISSING_PARAMS();
+
+                return $this->_easyFetch(
+                    'CALL sp_get_all_events_for_user(?)',
+                    'i',
+                    $this->entityId,
+                    true,
+                    10);
+
+            case 'joined':
+                if (!isset($this->entityId))
+                    ERR_MISSING_PARAMS();
+
+                return $this->_easyFetch(
+                    'CALL sp_get_joined_events(?)',
+                    'i',
+                    $this->entityId,
+                    true,
+                    10);
+
             case null:
                 if (!isset($this->entityId))
                     ERR_MISSING_PARAMS();
