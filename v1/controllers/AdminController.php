@@ -27,7 +27,18 @@ class AdminController extends ApiControllerBase
                     $this->entityId,
                     true,
                     10);
+
+            case 'pending':
+                if (!isset($this->args['event']))
+                    ERR_MISSING_PARAMS();
+
+                return $this->_easyFetch(
+                    'CALL sp_get_pending_participators(?)',
+                    'i',
+                    $this->args['event']);
+
             default:
+
                 ERR_VERB($this->verb);
         }
     }
