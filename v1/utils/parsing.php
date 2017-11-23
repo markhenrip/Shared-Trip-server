@@ -8,11 +8,15 @@ function PUTparams() {
     
     parse_str(file_get_contents("php://input"), $put_body);
 
+    if (is_array($put_body)) {
+        return $put_body;
+    }
     $body_master_key = array_shift(array_keys($put_body));
     $put_body_contents = $put_body[$body_master_key];
 
     $raw_params =
         explode("Content-Disposition: form-data; name=", $put_body_contents);
+
 
     $actual_params = array();
 
