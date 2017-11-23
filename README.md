@@ -1,10 +1,18 @@
 # Shared-Trip-server
-the PHP back-end of our Shared-Trip project https://github.com/PpesR/Shared-Trip
-
-## Basic outline  
+The PHP back-end of our Shared-Trip project https://github.com/PpesR/Shared-Trip
 
 This repo currently contains all the versions of PHP code that have ever been behind our app. 
 This includes sloppy non-class files we wrote to test out a new functionality like database querys, image upload logic etc. 
+
+**API v1 IS READY AND WORKING! CHECK OUT ITS DOCUMENTATION IN THE WIKI!**
+
+## The Shared Trip API v1 (4th iteration)
+
+The skeleton and 3rd iteration's functionality are now all in place and work is being done on Android project to switch to API routes instead of communicating with old parameter handler. Long story short: 
+![The code is shorter and more human-readable!](https://cdn.pbrd.co/images/GV0y0ap.png)
+
+## History (Before 4th iteration)
+
 At the moment of writing this there's an almost empty directory v1 where we'd like to put an actual API someday.
 
 ### First steps (End of 2nd and early 3rd iteration)
@@ -34,5 +42,6 @@ We'll try our best to convert our existing solution into a "normal" API.
 We won't be using any framework and instead build it from scratch. 
 This site http://coreymaynard.com/blog/creating-a-restful-api-with-php/ served as an 
 inspiration for parts of current parameter-handler logic and will very likely be the base for the new architecure. 
+
 
 
