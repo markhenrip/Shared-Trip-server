@@ -11,16 +11,29 @@ class UserController extends ApiControllerBase
 
     protected function _create()
     {
-        if (!isset($this->args['fb_id'], $this->args['name'], $this->args['gender']))
+        if (!isset($this->args['name'], $this->args['gender']))
             ERR_MISSING_PARAMS();
 
-        $id = $this->args['fb_id'];
+        $query = null;
+        $id = null;
+        if (isset($this->args['fb_id'])) {
+            $id = $this->args['fb_id'];
+            $query = 'CALL users.sp_create_fb_user(?,?,?,?)';
+        }
+        elseif (isset($this->args['google_id'])) {
+            $id = $this->args['google_id'];
+            $query = 'CALL users.sp_create_google_user(?,?,?,?)';
+        }
+        else {
+            ERR_MISSING_PARAMS();
+        }
+
         $name = $this->args['name'];
         $sex = $this->args['gender'];
         $picUri = $this->args['picture'];
 
         return $this->_easyFetch(
-            'CALL users.sp_create_fb_user(?,?,?,?)',
+            $query,
             'ssss',
             array($id, $name, $sex, $picUri));
     }
