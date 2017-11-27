@@ -11,7 +11,7 @@ class UserController extends ApiControllerBase
 
     protected function _create()
     {
-        if (!isset($this->args['name'], $this->args['gender']))
+        if (!isset($this->args['name']))
             ERR_MISSING_PARAMS();
 
         $query = null;
@@ -32,15 +32,35 @@ class UserController extends ApiControllerBase
         $sex = $this->args['gender'];
         $picUri = $this->args['picture'];
 
+        if ($sex == 'null') $sex = null;
+
         return $this->_easyFetch(
             $query,
             'ssss',
-            array($id, $name, $sex, $picUri));
+            array($id, $name, $sex, $picUri))[0];
     }
 
     protected function _read()
     {
         switch ($this->verb) {
+
+            case 'exists':
+                if ($this->args['google_id'] == 'null' or !isset($this->args['google_id']))
+                    $this->args['google_id'] = null;
+
+                if ($this->args['fb_id'] == 'null' or !isset($this->args['fb_id']))
+                    $this->args['fb_id'] = null;
+
+                if (!isset($this->args['fb_id']) and !isset($this->args['google_id']))
+                    ERR_MISSING_PARAMS();
+
+                return $this->_easyFetch(
+                    'CALL users.sp_user_exists(?,?)',
+                    'ss',
+                    array(
+                        $this->args['google_id'],
+                        $this->args['fb_id']
+                    ))[0];
 
             case 'fb':
                 if (!isset($this->args['userId']))
