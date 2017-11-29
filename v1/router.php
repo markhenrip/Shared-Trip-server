@@ -10,6 +10,7 @@ include  'controllers/ApiControllerBase.php';
 include 'controllers/EventController.php';
 include 'controllers/UserController.php';
 include 'controllers/AdminController.php';
+include 'controllers/MessageController.php';
 
 include 'utils/parsing.php';
 include 'utils/errors.php';
@@ -71,6 +72,9 @@ try {
             break;
         case 'admin':
             $controller = new AdminController($allArgs);
+            break;
+        case 'message':
+            $controller = new MessageController($allArgs);
             break;
         default:
             ERR_CONTROLLER_NAME($controllerName);
