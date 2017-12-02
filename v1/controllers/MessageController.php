@@ -42,10 +42,14 @@ class MessageController extends ApiControllerBase
         $data = array(
             "to" => "/topics/" . $topic,
             "data" => array(
+                "message_id" => $messageSaved['message_id'],
                 "sender_id" => $sender,
                 "time" => $time,
                 "message" => $message,
-                "event_id" => $event
+                "event_id" => $event,
+                "event_name" => $messageSaved['trip_name'],
+                "sender_name" => $messageSaved['sender_name'],
+                "sender_picture" => $messageSaved['sender_picture']
             )
         );
 
