@@ -11,28 +11,25 @@ class UserController extends ApiControllerBase
 
     protected function _create()
     {
-        if (!isset($this->args['name']))
-            ERR_MISSING_PARAMS();
+        $this->_mustHave('name');
+        $this->_mustHaveAny(array('fb_id', 'google_id'));
 
         $query = null;
         $id = null;
+
         if (isset($this->args['fb_id'])) {
             $id = $this->args['fb_id'];
             $query = 'CALL users.sp_create_fb_user(?,?,?,?)';
         }
+
         elseif (isset($this->args['google_id'])) {
             $id = $this->args['google_id'];
             $query = 'CALL users.sp_create_google_user(?,?,?,?)';
         }
-        else {
-            ERR_MISSING_PARAMS();
-        }
 
         $name = $this->args['name'];
-        $sex = $this->args['gender'];
         $picUri = $this->args['picture'];
-
-        if ($sex == 'null') $sex = null;
+        $sex = $this->_parseForNull($this->args['gender']);
 
         return $this->_easyFetch(
             $query,
@@ -44,37 +41,31 @@ class UserController extends ApiControllerBase
     {
         switch ($this->verb) {
 
+            case 'conversation':
+                $this->_mustHaveAll(array('event', 'from'));
+                return null;
+
             case 'exists':
-                if ($this->args['google_id'] == 'null' or !isset($this->args['google_id']))
-                    $this->args['google_id'] = null;
+                $this->_mustHaveAny(array('fb_id', 'google_id'));
 
-                if ($this->args['fb_id'] == 'null' or !isset($this->args['fb_id']))
-                    $this->args['fb_id'] = null;
-
-                if (!isset($this->args['fb_id']) and !isset($this->args['google_id']))
-                    ERR_MISSING_PARAMS();
+                $googleId = $this->_parseForNull($this->args['google_id']);
+                $facebookId = $this->_parseForNull($this->args['fb_id']);
 
                 return $this->_easyFetch(
                     'CALL users.sp_user_exists(?,?)',
                     'ss',
-                    array(
-                        $this->args['google_id'],
-                        $this->args['fb_id']
-                    ))[0];
+                    array($googleId, $facebookId)
+                )[0];
 
             case 'fb':
-                if (!isset($this->args['userId']))
-                    ERR_MISSING_PARAMS();
-
+                $this->_mustHave('userId');
                 return $this->_easyFetch(
                     'CALL sp_get_fb_user_data(?)',
                     's',
                     $this->args['userId'])[0];
 
             case 'browse':
-                if (!isset($this->entityId))
-                    ERR_MISSING_PARAMS();
-
+                $this->_mustHaveID();
                 return $this->_easyFetch(
                     'CALL sp_get_all_events_for_user(?)',
                     'i',
@@ -83,8 +74,8 @@ class UserController extends ApiControllerBase
                     10);
 
             case 'status':
-                if (!isset($this->entityId, $this->args['event']))
-                    ERR_MISSING_PARAMS();
+                $this->_mustHaveID();
+                $this->_mustHave('event');
 
                 return $this->_easyFetch(
                     'CALL sp_get_approval_status(?,?)',
@@ -93,8 +84,7 @@ class UserController extends ApiControllerBase
                 )[0];
 
             case 'joined':
-                if (!isset($this->entityId))
-                    ERR_MISSING_PARAMS();
+                $this->_mustHaveID();
 
                 return $this->_easyFetch(
                     'CALL sp_get_joined_events(?)',
@@ -104,8 +94,7 @@ class UserController extends ApiControllerBase
                     10);
 
             case null:
-                if (!isset($this->entityId))
-                    ERR_MISSING_PARAMS();
+                $this->_mustHaveID();
 
                 return $this->_easyFetch(
                     'CALL sp_get_user_data(?)',
@@ -120,38 +109,30 @@ class UserController extends ApiControllerBase
 
     protected function _update()
     {
-        if (!isset($this->entityId)) {
-            ERR_MISSING_PARAMS();
-        }
+        $this->_mustHaveID();
 
         // NB! can't update name, gender, FB/Google id and picture because they all come from FB/Google
 
-        $updated = false;
+        $this->_mustHaveAny(array('description', 'birthday'));
+        $stmtArgs = array($this->entityId);
+
         if (isset($this->args['description'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['description']);
+            $stmtArgs[] = $this->args['description'];
             $this->_noResult('CALL users.sp_update_user_description(?,?)','is',$stmtArgs);
-            $updated = true;
+            array_pop($stmtArgs);
         }
 
         if (isset($this->args['birthday'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['birthday']);
+            $stmtArgs[] = $this->args['birthday'];
             $this->_noResult('CALL users.sp_update_user_birthday(?,?)','is', $stmtArgs);
-            $updated = true;
-        }
-
-        if (!$updated){
-            ERR_MISSING_PARAMS();
+            array_pop($stmtArgs);
         }
     }
 
     protected function _delete()
     {
-        if (!isset($this->entityId, $this->args['event']))
-            ERR_MISSING_PARAMS();
+        $this->_mustHaveID();
+        $this->_mustHave('event');
 
         $result = $this->_easyFetch(
             'CALL sp_leave_event(?,?)',

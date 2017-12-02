@@ -8,7 +8,7 @@ function PUTparams() {
     
     parse_str(file_get_contents("php://input"), $put_body);
 
-    if (is_array($put_body)) {
+    if (is_array($put_body) and !putBodyIsScrambled($put_body)) {
         return $put_body;
     }
     $body_master_key = array_shift(array_keys($put_body));
@@ -104,6 +104,12 @@ function joinPathArgs($args) {
         $argsObject[$key] = $val;
     }
     return $argsObject;
+}
+
+function putBodyIsScrambled($put_body) {
+    return
+        count($put_body) == 1
+        and preg_match('~^-{20,}~', array_keys($put_body)[0]);
 }
 
 ?>

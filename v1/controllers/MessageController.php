@@ -12,20 +12,13 @@ class MessageController extends ApiControllerBase
     {
         define( 'API_ACCESS_KEY', 'AIzaSyD95xHr9r5NYIO8nm3XBsFwsmUcxHBzxu0' );
 
-        if (!isset(
-            $this->args['message']
-            , $this->args['event']
-            , $this->args['sender_id']
-            , $this->args['topic'])
-        ) ERR_MISSING_PARAMS();
+        $this->_mustHaveAll(array('message', 'event', 'sender_id', 'topic'));
 
         $message = $this->args['message'];
         $sender = $this->args['sender_id'];
         $topic = $this->args['topic'];
-        $time = $this->args['time_sent'];
+        $time = $this->_parseForNull($this->args['time_sent']);
         $event = $this->args['event'];
-
-        if ($time == "") $time = null;
 
         $messageSaved = $this->_easyFetch(
             "CALL messages.sp_new_message(?,?,?,?,?)",
@@ -38,8 +31,11 @@ class MessageController extends ApiControllerBase
                 $event)
         )[0];
 
-        if (!isset($messageSaved['message_id']) || !is_numeric($messageSaved['message_id']))
-            throw new Exception("Invalid internal message id: ".$messageSaved['message_id']);
+        if (!isset($messageSaved['message_id']) || !is_numeric($messageSaved['message_id'])) {
+            throw new Exception(
+                "Invalid internal message id: " . $messageSaved['message_id']
+            );
+        }
 
         if ($time == null) $time = $messageSaved['time_sent_utc'];
 

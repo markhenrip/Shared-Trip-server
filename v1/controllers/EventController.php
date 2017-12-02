@@ -22,15 +22,10 @@ class EventController extends ApiControllerBase
             return $this->_joinEvent();
         }
 
-        if (!isset($this->args['user'], $this->args['location'],
-            $this->args['name'], $this->args['description'],
-            $this->args['total_cost'], $this->args['spots'],
-            $this->args['start_date'], $this->args['end_date'],
-            $this->args['private'])
-        ) ERR_MISSING_PARAMS();
-
-        if ($this->args['start_date'] == "null") $this->args['start_date'] = null;
-        if ($this->args['end_date']   == "null") $this->args['end_date']   = null;
+        $this->_mustHaveAll(
+            array('user', 'name', 'location', 'admin', 'total_cost', 'spots',
+                'description', 'start_date', 'end_date', 'private')
+        );
 
         $sql = 'CALL sp_event_creation(?,?,?,?,?,?,?,?,?,?)';
         $usr = $this->args['user'];
@@ -39,8 +34,8 @@ class EventController extends ApiControllerBase
         $cost = $this->args['total_cost'];
         $spots = $this->args['spots'];
         $desc = $this->args['description'];
-        $start = $this->args['start_date'];
-        $end = $this->args['end_date'];
+        $start = $this->_parseForNull($this->args['start_date']);
+        $end = $this->_parseForNull($this->args['end_date']);
         $priv = $this->args['private'];
 
         if (isset($this->file)) {
@@ -83,9 +78,7 @@ class EventController extends ApiControllerBase
             return $this->_search();
         }
 
-        if (!isset($this->entityId)){
-            ERR_MISSING_PARAMS();
-        }
+        $this->_mustHaveID();
 
         return $this->_easyFetch(
             'CALL sharedtrip.sp_get_event(?)',
@@ -98,94 +91,35 @@ class EventController extends ApiControllerBase
 
     protected function _update()
     {
+        $this->_mustHaveID();
+
         if ($this->verb == 'upload'){
             return $this->_updateFile();
         }
 
-        $updated = false;
-        if (isset($this->args['name'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['name']);
-            $this->_noResult('CALL events.sp_update_event_name(?,?)','is',$stmtArgs);
-            $updated = true;
-        }
+        // Property name => property type (s for string, i for int, d for double)
+        $allEventProperties = array(
+            'name' => 's',
+            'location' => 's',
+            'admin' => 's',
+            'total_cost' => 'i',
+            'spots' => 'i',
+            'description' => 's',
+            'start_date' => 's',
+            'end_date' => 's',
+            'private' => 'i'
+        );
 
-        if (isset($this->args['location'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['location']);
-            $this->_noResult('CALL events.sp_update_event_location(?,?)','is',$stmtArgs);
-            $updated = true;
-        }
+        $this->_mustHaveAny(array_keys($allEventProperties));
 
-        if (isset($this->args['admin'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['admin']);
-            $this->_noResult('CALL events.sp_update_event_admin(?,?)','ii',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['total_cost'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['total_cost']);
-            $this->_noResult('CALL events.sp_update_event_cost(?,?)','ii',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['spots'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['spots']);
-            $this->_noResult('CALL events.sp_update_event_spots(?,?)','ii',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['description'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['description']);
-            $this->_noResult('CALL events.sp_update_event_description(?,?)','is',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['start_date'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['start_date']);
-            $this->_noResult('CALL events.sp_update_event_start_date(?,?)','is',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['end_date'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['end_date']);
-            $this->_noResult('CALL events.sp_update_event_end_date(?,?)','is',$stmtArgs);
-            $updated = true;
-        }
-
-        if (isset($this->args['private'])) {
-            $stmtArgs = array(
-                $this->entityId,
-                $this->args['private']);
-            $this->_noResult('CALL events.sp_update_event_privacy(?,?)','ii',$stmtArgs);
-            $updated = true;
-        }
-
-        if (!$updated){
-            ERR_MISSING_PARAMS();
+        foreach ($allEventProperties as $propName => $propType) {
+            $this->_updateIfSpecified($propName, $propType);
         }
     }
 
     protected function _delete()
     {
-        if (!isset($this->entityId)){
-            ERR_MISSING_PARAMS();
-        }
-
+        $this->_mustHaveID();
         $this->_noResult('CALL events.sp_delete_event(?)','i',$this->entityId);
     }
 
@@ -212,8 +146,7 @@ class EventController extends ApiControllerBase
 
     private function _joinEvent()
     {
-        if (!isset($this->args['user']))
-            ERR_MISSING_PARAMS();
+        $this->_mustHave('user');
 
         $this->_noResult(
             'CALL sp_join_event(?,?)',
@@ -222,8 +155,8 @@ class EventController extends ApiControllerBase
     }
 
     private function _search() {
-        $criteria = false;
 
+        $this->_mustHaveAny(array('name', 'location'));
         $combinedResult = array();
 
         if (isset($this->args['name'])) {
@@ -233,7 +166,6 @@ class EventController extends ApiControllerBase
                 $this->args['name']);
 
             $combinedResult = $result;
-            $criteria = true;
         }
 
         if (isset($this->args['location'])) {
@@ -245,13 +177,24 @@ class EventController extends ApiControllerBase
             $combinedResult = $combinedResult
                 ? $result
                 : array_intersect($result, $combinedResult);
-            $criteria = true;
-        }
-
-        if (!$criteria){
-            ERR_MISSING_PARAMS();
         }
 
         return array_values($combinedResult);
+    }
+
+    private function _updateIfSpecified($propertyName, $type) {
+        if (isset($this->args[$propertyName])) {
+            $query = 'CALL events.sp_update_event_' . $propertyName . '(?,?)';
+
+            $stmtArgs = array(
+                $this->entityId,
+                $this->args[$propertyName]
+            );
+
+            $this->_noResult(
+                $query,
+                'i' . $type,
+                $stmtArgs);
+        }
     }
 }

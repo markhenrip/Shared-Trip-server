@@ -16,8 +16,7 @@ class AdminController extends ApiControllerBase
 
     protected function _read()
     {
-        if (!isset($this->entityId))
-            ERR_MISSING_PARAMS();
+        $this->_mustHaveID();
 
         switch ($this->verb) {
             case 'events':
@@ -29,8 +28,7 @@ class AdminController extends ApiControllerBase
                     10);
 
             case 'pending':
-                if (!isset($this->args['event']))
-                    ERR_MISSING_PARAMS();
+                $this->_mustHave('event');
 
                 return $this->_easyFetch(
                     'CALL sp_get_pending_participators(?)',
@@ -45,8 +43,7 @@ class AdminController extends ApiControllerBase
 
     protected function _update()
     {
-        if (!isset($this->args['event'], $this->args['user']))
-            ERR_MISSING_PARAMS();
+        $this->_mustHaveAll(array('event', 'user'));
 
         switch ($this->verb) {
             case 'approve':

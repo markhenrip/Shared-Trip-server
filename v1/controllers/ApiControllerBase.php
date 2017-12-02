@@ -149,4 +149,37 @@ abstract class ApiControllerBase
             ERR_STMT_EXEC($stmt->error);
         }
     }
+
+    protected function _mustHave($argName) {
+        if (!isset($this->args[$argName])) ERR_MISSING_PARAMS($argName);
+    }
+
+    protected function _mustHaveAll($argNames) {
+        $missing = array();
+
+        foreach ($argNames as $name) {
+            if (!isset($this->args[$name]))
+                $missing[] = $name;
+        }
+        if (count($missing) > 0) {
+            ERR_MISSING_PARAMS(implode(", ", $missing));
+        }
+    }
+
+    protected function _mustHaveAny($argNames) {
+        foreach ($argNames as $name) {
+            if (isset($this->args[$name]))
+                return;
+        }
+        ERR_MISSING_PARAMS(implode(" / ", $argNames));
+    }
+
+    protected function _mustHaveID() {
+        if (!isset($this->entityId)) ERR_MISSING_PARAMS('<ENTITY_ID>');
+    }
+
+    protected function _parseForNull($string) {
+        if (isset($string) and ($string == 'null' or $string == '')) return null;
+        return $string;
+    }
 }
