@@ -182,4 +182,9 @@ abstract class ApiControllerBase
         if (isset($string) and ($string == 'null' or $string == '')) return null;
         return $string;
     }
+
+    protected function _valueOrZero($argName) {
+        if (!isset($this->args[$argName])) return 0;
+        return $this->args[$argName];
+    }
 }

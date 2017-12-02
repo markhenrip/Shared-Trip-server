@@ -42,8 +42,15 @@ class UserController extends ApiControllerBase
         switch ($this->verb) {
 
             case 'conversation':
-                $this->_mustHaveAll(array('event', 'from'));
-                return null;
+                $this->_mustHaveID();
+                $this->_mustHave('event');
+
+                return $this->_easyFetch(
+                    'CALL messages.sp_message_history(?,?,?)',
+                    'iii',
+                    array(
+                        $this->entityId, $this->args['event'], $this->_valueOrZero('from')
+                    ));
 
             case 'exists':
                 $this->_mustHaveAny(array('fb_id', 'google_id'));

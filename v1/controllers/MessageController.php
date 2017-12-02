@@ -40,7 +40,7 @@ class MessageController extends ApiControllerBase
         if ($time == null) $time = $messageSaved['time_sent_utc'];
 
         $data = array(
-            "to" => "/topics/".$topic,
+            "to" => "/topics/" . $topic,
             "data" => array(
                 "sender_id" => $sender,
                 "time" => $time,
