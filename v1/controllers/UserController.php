@@ -52,6 +52,10 @@ class UserController extends ApiControllerBase
                         $this->entityId, $this->args['event'], $this->_valueOrZero('from')
                     ));
 
+            case 'unread':
+                $this->_mustHaveID();
+                return $this->_getUnreadSorted();
+
             case 'exists':
                 $this->_mustHaveAny(array('fb_id', 'google_id'));
 
@@ -151,5 +155,61 @@ class UserController extends ApiControllerBase
             throw new Exception($result['error_reason']);
         }
         return $result;
+    }
+
+    private function _getUnreadSorted() {
+        $allUnreads =  $this->_easyFetch(
+            'CALL messages.sp_all_unread(?)',
+            'i',
+            $this->entityId
+        );
+
+        $sorted = array();
+        foreach ($allUnreads as $unreadMessage) {
+
+            $eventId = $unreadMessage['event_id'];
+            $orderNr = $this->_elementWithFieldExists($sorted, 'event', $eventId);
+
+            $eventMessages = null;
+            if ($orderNr > -1){
+                $eventMessages = $sorted[$orderNr]['messages'];
+                $eventMessages[] = array(
+                    'from' => $unreadMessage['sender_id'],
+                    'time_sent' => $unreadMessage['time_fcm_received_utc'],
+                    'text' => $unreadMessage['message'],
+                    'id' => $unreadMessage['message_id']
+                );
+                $sorted[$orderNr]['messages'] = $eventMessages;
+            }
+            else {
+                $eventObject = array(
+                    'event' => $eventId,
+                    'event_name' =>  $unreadMessage['event_name'],
+                    'topic' => $unreadMessage['topic_name'],
+                    'messages' => []
+                );
+
+                $eventMessages[] = array(
+                    'from' => $unreadMessage['sender_id'],
+                    'time_sent' => $unreadMessage['time_fcm_received_utc'],
+                    'text' => $unreadMessage['message'],
+                    'id' => $unreadMessage['message_id']
+                );
+                $eventObject['messages'] = $eventMessages;
+                $sorted[] = $eventObject;
+            }
+        }
+        return $sorted;
+    }
+
+    private function _elementWithFieldExists($array, $fieldName, $expectedValue) {
+        $count = 0;
+        foreach ($array as $element) {
+            if (array_key_exists($fieldName, $element) and $element[$fieldName] == $expectedValue)
+                return $count;
+
+            $count++;
+        }
+        return -1;
     }
 }

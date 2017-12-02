@@ -91,7 +91,15 @@ class MessageController extends ApiControllerBase
 
     protected function _update()
     {
-        ERR_MISSING_FUNCTION_UPDATE($this->entityName);
+        $this->_mustHaveID();
+        $this->_mustHave('user');
+        $this->_noResult(
+            'CALL messages.sp_mark_as_seen(?,?)',
+            'ii',
+            array(
+                $this->entityId,
+                $this->args['user'])
+        );
     }
 
     protected function _delete()
