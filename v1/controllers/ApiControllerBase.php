@@ -68,9 +68,10 @@ abstract class ApiControllerBase
      * @param $params - regular array of values for binding
      * @param bool $withImage - whether the results contain an image
      * @param int $imageIndex - if they do, then at which position
-     * @return array|null - query results (named)
+     * @return array|null|string - query results (named)
      */
-    protected function _easyFetch($query, $types = '', $params = null, $withImage = false, $imageIndex = 0) {
+    protected function _easyFetch($query, $types = '', $params = null, $withImage = false, $imageIndex = 0
+    , $debug = false) {
 
         $stmt = $this->connection->prepare($query);
 
