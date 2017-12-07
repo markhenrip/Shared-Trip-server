@@ -56,6 +56,19 @@ class UserController extends ApiControllerBase
                 $this->_mustHaveID();
                 return $this->_getUnreadSorted();
 
+            case 'friend-events':
+                $this->_mustHave("data");
+
+                return $this->_fetchObscured(
+                    "v_vc50_ft",
+                    "ufi",
+                    $this->args["data"],
+                    array("fb_id","user_id","full_name","first_name","user_picture","event_id","location","event_picture"),
+                    $this->args['after'],
+                    $this->args['max'],
+                    true,
+                    7);
+
             case 'exists':
                 $this->_mustHaveAny(array('fb_id', 'google_id'));
 

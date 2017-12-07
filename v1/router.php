@@ -62,7 +62,6 @@ try {
     switch ($controllerName) {
         /*case 'test':
             $controller = new TestController($allArgs);
-            $response = $controller->process();
             break;*/
         case 'event':
             $controller = new EventController($allArgs);

@@ -21,5 +21,8 @@ function ERR_MYSQLI_CONNECTION($conErr) { throw new Exception('Failed to establi
 function ERR_STMT_EXEC($stmtErr) { throw new Exception('Could not execute SQL statement: '.$stmtErr); }
 function ERR_MISSING_PARAMS($paramList) { throw new Exception('Missing one or more query parameters: '.$paramList); }
 
+/* Format Errors */
+function ERR_RESPONSE_LABELS($labels) { throw new Exception('Incorrect amount of response labels: '.$labels); }
+
 /* Other function errors */
 function ERR_VERB($verb) { throw new Exception('Undefined verb: '.$verb); }
