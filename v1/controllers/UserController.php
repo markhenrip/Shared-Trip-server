@@ -67,7 +67,7 @@ class UserController extends ApiControllerBase
                     $this->args['after'],
                     $this->args['max'],
                     true,
-                    7);
+                    8);
 
             case 'exists':
                 $this->_mustHaveAny(array('fb_id', 'google_id'));
