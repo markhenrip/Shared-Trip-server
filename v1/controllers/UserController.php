@@ -63,7 +63,7 @@ class UserController extends ApiControllerBase
                     "v_vc50_ft",
                     "ufi",
                     $this->args["data"],
-                    array("fb_id","user_id","full_name","first_name","user_picture","event_id","location","event_picture"),
+                    array("fb_id","user_id","full_name","first_name","user_picture","event_id","event_name","location","event_picture"),
                     $this->args['after'],
                     $this->args['max'],
                     true,
