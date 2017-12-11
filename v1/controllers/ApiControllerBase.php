@@ -86,7 +86,6 @@ abstract class ApiControllerBase
         } else if (isset($params)) {
             $stmt->mbind_param($types, $params);
         }
-
         return $this->_fetch($stmt, $withImage, $imageIndex, $customLabels);
     }
 
@@ -153,9 +152,9 @@ abstract class ApiControllerBase
         return $this->_compileResults($result, $customLabels, $withImage, $imageIndex);
     }
 
-    private function _compileResults(mysqli_result $result, $customLabels = null, $withImage = false, $imageIndex = 0) {
+    private function _compileResults($result, $customLabels = null, $withImage = false, $imageIndex = 0) {
 
-        if ($result==null) return null;
+        if (!isset($result) or !$result) return null;
 
         $fields = $result->fetch_fields();
 
@@ -223,7 +222,7 @@ abstract class ApiControllerBase
     }
 
     protected function _parseForNull($string) {
-        if (isset($string) and ($string == 'null' or $string == '')) return null;
+        if (!isset($string) or isset($string) and ($string == 'null' or $string == '')) return null;
         return $string;
     }
 

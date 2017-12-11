@@ -52,6 +52,16 @@ class UserController extends ApiControllerBase
                         $this->entityId, $this->args['event'], $this->_valueOrZero('from')
                     ));
 
+            case 'my-events':
+                $this->_mustHaveID();
+                return $this->_easyFetch(
+                    'CALL events.sp_get_my_events(?)',
+                    'i',
+                    $this->entityId,
+                    true,
+                    10
+                );
+
             case 'unread':
                 $this->_mustHaveID();
                 return $this->_getUnreadSorted();
@@ -91,18 +101,21 @@ class UserController extends ApiControllerBase
             case 'browse':
                 $this->_mustHaveID();
                 return $this->_easyFetch(
-                    'CALL sp_get_all_events_for_user(?)',
+                    'CALL users.sp_get_not_ended_events_for_user(?)',
                     'i',
                     $this->entityId,
                     true,
                     10);
+
+            case "search":
+                return $this->_search();
 
             case 'status':
                 $this->_mustHaveID();
                 $this->_mustHave('event');
 
                 return $this->_easyFetch(
-                    'CALL sp_get_approval_status(?,?)',
+                    'CALL sharedtrip.sp_get_approval_status(?,?)',
                     'ii',
                     array($this->args['event'], $this->entityId)
                 )[0];
@@ -121,7 +134,7 @@ class UserController extends ApiControllerBase
                 $this->_mustHaveID();
 
                 return $this->_easyFetch(
-                    'CALL sp_get_user_data(?)',
+                    'CALL users.sp_get_user_info(?)',
                     'i',
                     $this->entityId)[0];
 
@@ -155,19 +168,38 @@ class UserController extends ApiControllerBase
 
     protected function _delete()
     {
+        ERR_MISSING_FUNCTION_DELETE($this->entityName);
+    }
+
+    private function _search() {
+
         $this->_mustHaveID();
-        $this->_mustHave('event');
+        $this->_mustHaveAny(array('name', 'location'));
+        $combinedResult = array();
 
-        $result = $this->_easyFetch(
-            'CALL sp_leave_event(?,?)',
-            'ii',
-            array($this->args['event'], $this->entityId)
-        )[0];
+        if (isset($this->args['name'])) {
+            $result = $this->_easyFetch(
+                'CALL events.sp_search_event_by_name(?,?)',
+                'si',
+                array($this->args['name'], $this->entityId),
+                true,
+                10);
 
-        if (isset($result['error_reason'])){
-            throw new Exception($result['error_reason']);
+            $combinedResult = $result;
         }
-        return $result;
+
+        /*if (isset($this->args['location'])) {
+            $result = $this->_easyFetch(
+                'CALL search.sp_search_events_by_location(?)',
+                's',
+                $this->args['location']);
+
+            $combinedResult = $combinedResult
+                ? $result
+                : array_intersect($result, $combinedResult);
+        }*/
+
+        return array_values($combinedResult);
     }
 
     private function _getUnreadSorted() {

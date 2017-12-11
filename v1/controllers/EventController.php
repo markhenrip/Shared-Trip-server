@@ -27,7 +27,7 @@ class EventController extends ApiControllerBase
                 'description', 'start_date', 'end_date', 'private')
         );
 
-        $sql = 'CALL sp_event_creation(?,?,?,?,?,?,?,?,?,?)';
+        $sql = 'CALL events.sp_create_event(?,?,?,?,?,?,?,?,?,?)';
         $usr = $this->args['user'];
         $loc = $this->args['location'];
         $name = $this->args['name'];
@@ -74,19 +74,36 @@ class EventController extends ApiControllerBase
 
     protected function _read()
     {
-        if ($this->verb=='search') {
-            return $this->_search();
-        }
-
         $this->_mustHaveID();
+        switch ($this->verb) {
+            case "participators": {
+                return $this->_easyFetch(
+                    'CALL events.sp_get_participators(?)',
+                    'i',
+                    $this->entityId
+                );
+            }
 
-        return $this->_easyFetch(
-            'CALL sharedtrip.sp_get_event(?)',
-            'i',
-            $this->entityId,
-            true,
-            10
-        )[0]; // makes sense to return an element, not an array of one element
+            case "image":
+                return $this->_easyFetch(
+                    'CALL events.sp_get_event_picture(?)',
+                    'i',
+                    $this->entityId,
+                    true,
+                    0
+                )[0];
+
+            case null:
+                return $this->_easyFetch(
+                    'CALL sharedtrip.sp_get_event(?)',
+                    'i',
+                    $this->entityId,
+                    true,
+                    10
+                )[0]; // makes sense to return an element, not an array of one element
+            default:
+                ERR_VERB($this->verb);
+        }
     }
 
     protected function _update()
@@ -120,7 +137,21 @@ class EventController extends ApiControllerBase
     protected function _delete()
     {
         $this->_mustHaveID();
-        $this->_noResult('CALL events.sp_delete_event(?)','i',$this->entityId);
+        $participator = $this->args['participator'];
+        if (isset($participator)) {
+
+            $result = $this->_easyFetch(
+                'CALL sp_leave_event(?,?)',
+                'ii',
+                array($this->entityId, $participator)
+            )[0];
+
+            if (isset($result['error_reason'])) throw new Exception($result['error_reason']);
+            return $result;
+        }
+        else {
+            $this->_noResult('CALL events.sp_delete_event(?)', 'i', $this->entityId);
+        }
     }
 
     private function _updateFile() {
@@ -148,38 +179,33 @@ class EventController extends ApiControllerBase
     {
         $this->_mustHave('user');
 
-        $this->_noResult(
-            'CALL sp_join_event(?,?)',
-            'ii',
-            array($this->entityId, $this->args['user']));
-    }
+        $message = $this->args['message'];
+        $myFriend = $this->args['friend'];
 
-    private function _search() {
-
-        $this->_mustHaveAny(array('name', 'location'));
-        $combinedResult = array();
-
-        if (isset($this->args['name'])) {
-            $result = $this->_easyFetch(
-                'CALL sp_search_event_by_name(?)',
-                's',
-                $this->args['name']);
-
-            $combinedResult = $result;
+        if (isset($message)) {
+            $this->_noResult(
+                'CALL events.sp_join_event(?,?,?)',
+                'iis',
+                array($this->entityId, $this->args['user'], $message));
         }
 
-        if (isset($this->args['location'])) {
+        elseif (isset($myFriend)) {
             $result = $this->_easyFetch(
-                'CALL search.sp_search_events_by_location(?)',
-                's',
-                $this->args['location']);
-
-            $combinedResult = $combinedResult
-                ? $result
-                : array_intersect($result, $combinedResult);
+                'CALL events.sp_join_friend_event(?,?,?)',
+                'iis',
+                array($this->entityId, $this->args['user'], $myFriend.''));
+            if (isset($result) and count($result)>0 and array_key_exists('error', $result[0])) {
+                return $result[0];
+            }
         }
 
-        return array_values($combinedResult);
+        else {
+
+            $this->_noResult(
+                'CALL sp_join_event(?,?)',
+                'ii',
+                array($this->entityId, $this->args['user']));
+        }
     }
 
     private function _updateIfSpecified($propertyName, $type) {
