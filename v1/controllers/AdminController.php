@@ -62,7 +62,12 @@ class AdminController extends ApiControllerBase
                 )[0];
 
                 if (isset($result['error_reason'])) throw new Exception($result['error_reason']);
-                return $result;
+
+                $this->_noResult(
+                    'CALL events.sp_quick_join(?,?)',
+                    'ii',
+                    array($this->args['event'], $this->entityId));
+                break;
 
             case 'approve':
                 return $this->_easyFetch(
